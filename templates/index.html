@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniEdit Studio — Pro Video NLE, AI & 3D Graphic Suite</title>
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Bebas+Neue&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+    
+    <!-- Fabric.js & Firebase Cloud SDKs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- NATIVE FILE INPUTS -->
+    <input type="file" id="input-custom-logo" class="sr-file-input" accept="image/*,.png,.jpg,.jpeg,.webp">
+    <input type="file" id="input-any-media" class="sr-file-input" multiple accept="video/*,audio/*,image/*,.mp4,.mov,.webm,.mp3,.wav,.png,.jpg,.jpeg,.webp">
+    <input type="file" id="input-video-only" class="sr-file-input" accept="video/*,.mp4,.mov,.webm">
+    <input type="file" id="input-png-overlay" class="sr-file-input" accept="image/*,.png,.webp,.jpg,.jpeg,.gif">
+    <input type="file" id="input-audio-only" class="sr-file-input" accept="audio/*,.mp3,.wav,.ogg">
+    <input type="file" id="input-graphic-image" class="sr-file-input" accept="image/*,.png,.jpg,.jpeg,.webp">
+
+    <!-- ========================================================================= -->
+    <!-- MANDATORY STARTUP AUTH GATE POPUP (0.1s Instant Unlock)                   -->
+    <!-- ========================================================================= -->
+    <div id="startup-auth-gate" class="auth-gate-backdrop">
+        <div class="auth-gate-modal">
+            <div class="auth-gate-brand">
+                <label for="input-custom-logo" class="gate-logo-wrapper" title="Click to Upload Your Custom Studio Logo">
+                    <img id="gate-logo-img" src="/static/logo.png" alt="OmniEdit Studio" onerror="this.hidden=true; document.getElementById('gate-logo-fallback').hidden=false;">
+                    <i id="gate-logo-fallback" class="fa-solid fa-layer-group" hidden></i>
+                </label>
+                <h2>Welcome to OmniEdit <span class="brand-highlight">Studio</span></h2>
+                <p>Sign In or Create an Account to unlock the AI Video & 3D Graphic Suite</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="gate-tab-signup">Create Account</button>
+                <button type="button" class="auth-tab" id="gate-tab-signin">Sign In with Gmail</button>
+            </div>
+
+            <form id="gate-form-signup" class="auth-form">
+                <div class="field-group">
+                    <label>Full Name</label>
+                    <input type="text" id="gate-reg-name" placeholder="Enter your full name" required>
+                </div>
+                <div class="field-group">
+                    <label>Gmail Address</label>
+                    <input type="email" id="gate-reg-email" placeholder="yourname@gmail.com" required>
+                </div>
+                <div class="field-group">
+                    <label>Studio Profession / Role</label>
+                    <select id="gate-reg-role">
+                        <option value="Video Editor & Motion Designer">Video Editor & Motion Designer</option>
+                        <option value="3D Graphic & Brand Designer">3D Graphic & Brand Designer</option>
+                        <option value="YouTube / Content Creator">YouTube / Content Creator</option>
+                        <option value="Full-Stack Creative Director">Full-Stack Creative Director</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Create Password (Min 6 characters)</label>
+                    <input type="password" id="gate-reg-pass" placeholder="Minimum 6 characters" minlength="6" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:8px;">
+                    <i class="fa-solid fa-user-plus"></i> Create Account in OmniEdit Studio
+                </button>
+            </form>
+
+            <form id="gate-form-signin" class="auth-form" hidden>
+                <div class="field-group">
+                    <label>Registered Gmail Address</label>
+                    <input type="email" id="gate-login-email" placeholder="yourname@gmail.com" required>
+                </div>
+                <div class="field-group">
+                    <label>Password</label>
+                    <input type="password" id="gate-login-pass" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-emerald btn-lg" style="width:100%;margin-top:8px;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Sign In to OmniEdit Studio
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="topbar">
+        <div class="brand">
+            <label for="input-custom-logo" class="brand-icon" title="Click to Upload Your Custom Studio Logo">
+                <img id="topbar-logo-img" src="/static/logo.png" alt="Logo" onerror="this.hidden=true; document.getElementById('topbar-logo-fallback').hidden=false;">
+                <i id="topbar-logo-fallback" class="fa-solid fa-layer-group" hidden></i>
+            </label>
+            <div class="brand-text">
+                <span class="brand-title">OmniEdit <span class="brand-highlight">Studio</span></span>
+                <span class="brand-badge">MASTER EDITION</span>
+            </div>
+        </div>
+
+        <nav class="workspace-nav" id="workspace-nav">
+            <button type="button" class="nav-tab active" data-ws="ws-home">
+                <i class="fa-solid fa-table-cells-large"></i> Home Dashboard
+            </button>
+            <button type="button" class="nav-tab" data-ws="ws-video">
+                <i class="fa-solid fa-clapperboard"></i> Video Editing Studio
+            </button>
+            <button type="button" class="nav-tab" data-ws="ws-graphic">
+                <i class="fa-solid fa-cubes"></i> 3D Graphic Studio
+            </button>
+            <button type="button" class="nav-tab" data-ws="ws-account">
+                <i class="fa-solid fa-user-circle"></i> <span id="nav-account-label">Account</span>
+            </button>
+        </nav>
+
+        <div class="topbar-controls">
+            <button type="button" class="collab-badge" id="btn-toggle-collab" title="Click to Toggle Real-Time Cloud Collaboration Sync">
+                <span class="live-dot" id="collab-dot"></span>
+                <i class="fa-solid fa-users"></i> <span id="collab-status-txt">Live Sync: Ready</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-save-project">
+                <i class="fa-solid fa-floppy-disk"></i> Save Project
+            </button>
+            <label for="input-any-media" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Import Media
+            </label>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-open-export">
+                <i class="fa-solid fa-bolt"></i> Export Render
+            </button>
+        </div>
+    </header>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <main class="viewport">
+
+        <!-- ==================== WORKSPACE 0: SYMMETRICAL HOME DASHBOARD ==================== -->
+        <section id="ws-home" class="workspace active">
+            <div class="home-layout">
+                <div class="hero-banner">
+                    <div class="hero-left">
+                        <span class="eyebrow">OMNIEDIT STUDIO MASTER WORKSTATION</span>
+                        <h1>AI Voice & Subtitles, Chroma Key, Keyframes & 3D Design Suite</h1>
+                        <p>Complete production studio with 1-Click Green Screen Removal, Keyframe Curve Automation, Web Audio Equalizer, and 3D Vector Extrusion.</p>
+                    </div>
+                    <div class="hero-actions">
+                        <button type="button" class="btn btn-primary btn-lg" id="home-go-video">
+                            <i class="fa-solid fa-clapperboard"></i> Open Video Studio
+                        </button>
+                        <button type="button" class="btn btn-emerald btn-lg" id="home-go-graphic">
+                            <i class="fa-solid fa-cubes"></i> Open 3D Graphic Studio
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-lg" id="home-load-demo">
+                            <i class="fa-solid fa-play"></i> Load Master Demo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 EQUAL-SIZED SYMMETRICAL STAT CARDS WITH INDIVIDUAL DELETE/CLEAR BUTTONS -->
+                <div class="symmetrical-stats-grid">
+                    <div class="stat-card card-indigo">
+                        <div class="stat-card-top">
+                            <div class="stat-icon"><i class="fa-solid fa-photo-film"></i></div>
+                            <button type="button" class="btn-clear-pill" id="clear-all-assets-btn">
+                                <i class="fa-solid fa-trash-can"></i> Clear All
+                            </button>
+                        </div>
+                        <div class="stat-card-mid">
+                            <span class="stat-number" id="stat-assets">0</span>
+                            <span class="stat-title">Media Assets</span>
+                        </div>
+                        <div class="stat-card-foot">Videos, Audio & PNG Photos</div>
+                    </div>
+
+                    <div class="stat-card card-emerald">
+                        <div class="stat-card-top">
+                            <div class="stat-icon"><i class="fa-solid fa-film"></i></div>
+                            <button type="button" class="btn-clear-pill" id="clear-all-clips-btn">
+                                <i class="fa-solid fa-trash-can"></i> Clear All
+                            </button>
+                        </div>
+                        <div class="stat-card-mid">
+                            <span class="stat-number" id="stat-clips">0</span>
+                            <span class="stat-title">Timeline Clips</span>
+                        </div>
+                        <div class="stat-card-foot">Active Multi-Track Sequence</div>
+                    </div>
+
+                    <div class="stat-card card-amber">
+                        <div class="stat-card-top">
+                            <div class="stat-icon"><i class="fa-solid fa-cubes"></i></div>
+                            <button type="button" class="btn-clear-pill" id="clear-all-layers-btn">
+                                <i class="fa-solid fa-trash-can"></i> Clear All
+                            </button>
+                        </div>
+                        <div class="stat-card-mid">
+                            <span class="stat-number" id="stat-layers">0</span>
+                            <span class="stat-title">3D / 2D Layers</span>
+                        </div>
+                        <div class="stat-card-foot">Graphic Artboard Objects</div>
+                    </div>
+
+                    <div class="stat-card card-rose">
+                        <div class="stat-card-top">
+                            <div class="stat-icon"><i class="fa-solid fa-folder-open"></i></div>
+                            <button type="button" class="btn-clear-pill" id="clear-all-projects-btn">
+                                <i class="fa-solid fa-trash-can"></i> Clear All
+                            </button>
+                        </div>
+                        <div class="stat-card-mid">
+                            <span class="stat-number" id="stat-projects">0</span>
+                            <span class="stat-title">Saved Projects</span>
+                        </div>
+                        <div class="stat-card-foot">Synced with OmniEdit Cloud</div>
+                    </div>
+                </div>
+
+                <!-- 2 EQUAL-SIZED SYMMETRICAL LOWER PANELS -->
+                <div class="home-lower-grid">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span><i class="fa-solid fa-photo-film"></i> Uploaded Media Assets</span>
+                            <label for="input-any-media" class="btn btn-xs btn-primary">
+                                <i class="fa-solid fa-plus"></i> Upload Media
+                            </label>
+                        </div>
+                        <div id="home-media-grid" class="media-card-grid"></div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span><i class="fa-solid fa-folder-tree"></i> Saved Studio Projects</span>
+                            <button type="button" class="btn btn-xs btn-emerald" id="home-save-proj-btn">
+                                <i class="fa-solid fa-floppy-disk"></i> + Save Current
+                            </button>
+                        </div>
+                        <div id="home-projects-list" class="saved-projects-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== ENGINE 1: VIDEO EDITING STUDIO ==================== -->
+        <section id="ws-video" class="workspace">
+            <div class="video-engine-grid">
+                <div class="video-top-row">
+                    <!-- Left Panel: Media, PNG Overlay, AI Voiceover & Auto-Captions -->
+                    <aside class="panel">
+                        <div class="panel-header">
+                            <span><i class="fa-solid fa-layer-group"></i> Media & AI Generators</span>
+                            <label for="input-video-only" class="btn btn-xs btn-primary">
+                                <i class="fa-solid fa-upload"></i> + Video
+                            </label>
+                        </div>
+
+                        <div class="generator-bar">
+                            <label for="input-video-only" class="btn btn-sm btn-primary">
+                                <i class="fa-solid fa-video"></i> Upload Video
+                            </label>
+                            <label for="input-png-overlay" class="btn btn-sm btn-emerald">
+                                <i class="fa-solid fa-images"></i> + PNG Overlay
+                            </label>
+                            <button type="button" class="btn btn-sm btn-secondary" id="btn-add-overlay-track">
+                                <i class="fa-solid fa-font"></i> + Text Overlay
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary" id="btn-add-broll-track">
+                                <i class="fa-solid fa-clapperboard"></i> + B-Roll Box
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary" id="btn-load-sample-video">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Demo Video
+                            </button>
+                            <label for="input-audio-only" class="btn btn-sm btn-secondary">
+                                <i class="fa-solid fa-music"></i> + Audio BGM
+                            </label>
+                        </div>
+
+                        <!-- AI VOICEOVER & AUTO-CAPTIONS GENERATOR -->
+                        <div class="panel-subheader"><i class="fa-solid fa-robot"></i> AI Voiceover & Auto-Subtitles</div>
+                        <div class="ai-voice-box">
+                            <div style="display:flex;gap:5px;">
+                                <input type="text" id="ai-tts-input" placeholder="Type text for AI Voice & Subtitle..." style="flex:1;">
+                                <button type="button" class="btn btn-xs btn-primary" id="btn-ai-speak" title="Generate AI Voiceover & Auto-Caption">
+                                    <i class="fa-solid fa-volume-high"></i> Speak
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-xs btn-neon" id="btn-ai-subtitles" style="width:100%;">
+                                <i class="fa-solid fa-microphone-lines"></i> 🎙️ Live Mic Auto-Captions (Web Speech)
+                            </button>
+                        </div>
+
+                        <div class="panel-subheader">1-Click Text Templates</div>
+                        <div class="template-pills">
+                            <button type="button" class="tpl-pill tpl-neon" data-tpl="OMNIEDIT STUDIO" data-style="neon">Neon 3D</button>
+                            <button type="button" class="tpl-pill tpl-fire" data-tpl="BREAKING NEWS" data-style="banner">Red Banner</button>
+                            <button type="button" class="tpl-pill tpl-gold" data-tpl="SUBSCRIBE 🔔" data-style="gold">Gold Badge</button>
+                            <button type="button" class="tpl-pill tpl-minimal" data-tpl="CINEMATIC SUBTITLE" data-style="cinema">Cinema Sub</button>
+                        </div>
+
+                        <div class="panel-subheader">Media Bin</div>
+                        <div id="video-asset-list" class="asset-list"></div>
+                    </aside>
+
+                    <!-- Center Panel: Interactive Program Monitor + Chroma Canvas + Audio Visualizer -->
+                    <div class="panel monitor-panel">
+                        <div class="monitor-header">
+                            <div class="monitor-status">
+                                <span class="rec-dot"></span>
+                                <span id="video-monitor-title">Program Monitor — Drag & Resize Any Overlay/PNG on Screen</span>
+                            </div>
+                            <div class="aspect-ratio-group">
+                                <button type="button" class="ar-pill active" data-ar="16:9">16:9</button>
+                                <button type="button" class="ar-pill" data-ar="9:16">9:16</button>
+                                <button type="button" class="ar-pill" data-ar="1:1">1:1</button>
+                                <button type="button" class="ar-pill" data-ar="21:9">21:9</button>
+                            </div>
+                        </div>
+
+                        <div class="monitor-viewport">
+                            <div id="video-preview-container" class="preview-stage ar-16-9">
+                                <div id="aroll-transform-wrapper" class="aroll-wrapper">
+                                    <video id="main-video" playsinline crossorigin="anonymous"></video>
+                                    <!-- Real-Time Chroma Key & Synth Output Canvas -->
+                                    <canvas id="synth-video-canvas" width="1280" height="720" hidden></canvas>
+                                </div>
+
+                                <!-- Live Audio Frequency Waveform Visualizer Overlay -->
+                                <canvas id="audio-waveform-canvas" class="waveform-overlay" width="360" height="48"></canvas>
+
+                                <!-- INTERACTIVE DRAGGABLE & RESIZABLE PNG / B-ROLL LAYER -->
+                                <div id="broll-visual-box" class="interactive-stage-item broll-pip" hidden title="Drag to move PNG/B-Roll • Drag bottom-right dot to resize">
+                                    <img id="broll-img-el" alt="PNG Overlay" draggable="false" hidden>
+                                    <div id="broll-badge-el" class="broll-placeholder-badge">DRAGGABLE PNG / B-ROLL</div>
+                                    <div class="stage-resize-handle" id="broll-resize-handle"></div>
+                                </div>
+
+                                <!-- INTERACTIVE DRAGGABLE & RESIZABLE TEXT OVERLAY LAYER -->
+                                <div id="overlay-text-box" class="interactive-stage-item stage-overlay-text ov-style-neon" hidden title="Drag to move Text anywhere on video • Drag dot to scale">
+                                    <span id="overlay-text-span">OMNIEDIT STUDIO</span>
+                                    <div class="stage-resize-handle" id="overlay-resize-handle"></div>
+                                </div>
+
+                                <!-- Empty State Prompt -->
+                                <div id="video-empty-state" class="stage-empty">
+                                    <i class="fa-solid fa-clapperboard"></i>
+                                    <h4>OmniEdit Studio — Interactive Video Monitor</h4>
+                                    <p>Upload a video or PNG overlay—freely drag and resize overlays directly on the video screen!</p>
+                                    <div style="display:flex;gap:10px;margin-top:6px;">
+                                        <label for="input-video-only" class="btn btn-sm btn-primary">
+                                            <i class="fa-solid fa-upload"></i> Upload Video
+                                        </label>
+                                        <label for="input-png-overlay" class="btn btn-sm btn-emerald">
+                                            <i class="fa-solid fa-image"></i> Upload PNG Overlay
+                                        </label>
+                                        <button type="button" class="btn btn-sm btn-secondary" id="stage-sample-btn">
+                                            <i class="fa-solid fa-play"></i> Load Sample Demo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transport Controls -->
+                        <div class="transport-controls">
+                            <div class="transport-btns">
+                                <button type="button" class="icon-btn" id="btn-jump-start">
+                                    <i class="fa-solid fa-backward-fast"></i>
+                                </button>
+                                <button type="button" class="play-circle-btn" id="btn-play-pause">
+                                    <i class="fa-solid fa-play"></i>
+                                </button>
+                                <button type="button" class="icon-btn" id="btn-stop">
+                                    <i class="fa-solid fa-stop"></i>
+                                </button>
+                                <span class="timecode-readout" id="timecode-display">00:00.0 / 00:30.0</span>
+                            </div>
+
+                            <div class="scrubber-wrap">
+                                <input type="range" id="timeline-scrubber" min="0" max="30" step="0.02" value="0">
+                            </div>
+
+                            <div class="volume-wrap">
+                                <select id="playback-rate-select" class="speed-select">
+                                    <option value="0.5">0.5x</option>
+                                    <option value="1" selected>1.0x</option>
+                                    <option value="1.5">1.5x</option>
+                                    <option value="2">2.0x</option>
+                                </select>
+                                <i class="fa-solid fa-volume-high"></i>
+                                <input type="range" id="video-volume" min="0" max="1" step="0.05" value="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Chroma Key, Keyframes, Audio Equalizer & Clip Adjuster -->
+                    <aside class="panel">
+                        <div class="panel-header">
+                            <span><i class="fa-solid fa-sliders"></i> Master FX, Keyframes & EQ</span>
+                        </div>
+                        <div class="inspector-scroll">
+                            <!-- 1.Main Video Fit & 3D Tilt -->
+                            <div class="inspector-section">
+                                <label class="sec-label">Main Video Adjust (Fit, Zoom & 3D Tilt)</label>
+                                <div class="transform-row">
+                                    <button type="button" class="btn btn-xs btn-secondary" id="btn-fit-contain">Fit</button>
+                                    <button type="button" class="btn btn-xs btn-secondary" id="btn-fit-cover">Fill / Cover</button>
+                                    <button type="button" class="btn btn-xs btn-secondary" id="btn-rotate-video"><i class="fa-solid fa-rotate-right"></i> 90°</button>
+                                    <button type="button" class="btn btn-xs btn-secondary" id="btn-flip-video">Flip</button>
+                                </div>
+                                <div class="prop-grid-2" style="margin-top:4px;">
+                                    <div class="field-group">
+                                        <label>Zoom (<span id="vid-zoom-lbl">100%</span>)</label>
+                                        <input type="range" id="vid-scale-slider" min="50" max="200" value="100">
+                                    </div>
+                                    <div class="field-group">
+                                        <label>3D Tilt Y (<span id="vid-tilt-lbl">0°</span>)</label>
+                                        <input type="range" id="vid-tilt-slider" min="-45" max="45" value="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Real-Time Chroma Key Green Screen Removal -->
+                            <div class="inspector-section master-feature-box">
+                                <label class="sec-label"><i class="fa-solid fa-circle-half-stroke"></i> Chroma Key (Green Screen)</label>
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                                    <label class="fx-pill"><input type="checkbox" id="chk-chroma-key"> Remove BG Color</label>
+                                    <input type="color" id="chroma-target-color" value="#00ff00" title="Pick Screen Color">
+                                </div>
+                                <div class="field-group" style="margin-top:4px;">
+                                    <label>Color Tolerance (<span id="chroma-tol-lbl">90</span>)</label>
+                                    <input type="range" id="chroma-tolerance" min="20" max="180" value="90">
+                                </div>
+                            </div>
+
+                            <!-- 3. Keyframe Curve Automation Engine -->
+                            <div class="inspector-section master-feature-box">
+                                <label class="sec-label"><i class="fa-solid fa-diamond"></i> Keyframe Automation (<span id="kf-count-lbl">0</span>)</label>
+                                <div style="display:flex;gap:5px;">
+                                    <button type="button" class="btn btn-xs btn-emerald" id="btn-add-keyframe" style="flex:1;">
+                                        <i class="fa-solid fa-plus"></i> Add Keyframe ◆
+                                    </button>
+                                    <button type="button" class="btn btn-xs btn-danger-outline" id="btn-clear-keyframes">
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 4. Advanced Web Audio Equalizer -->
+                            <div class="inspector-section master-feature-box">
+                                <label class="sec-label"><i class="fa-solid fa-wave-square"></i> Web Audio Equalizer</label>
+                                <div class="prop-grid-2">
+                                    <div class="field-group">
+                                        <label>Bass (<span id="eq-bass-lbl">0 dB</span>)</label>
+                                        <input type="range" id="eq-bass" min="-15" max="15" value="0">
+                                    </div>
+                                    <div class="field-group">
+                                        <label>Vocal (<span id="eq-vocal-lbl">0 dB</span>)</label>
+                                        <input type="range" id="eq-vocal" min="-15" max="15" value="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 5. Color Grading LUTs -->
+                            <div class="inspector-section">
+                                <label class="sec-label">Color Grading LUTs</label>
+                                <div class="filter-chip-grid">
+                                    <button type="button" class="v-filter-btn active" data-filter="none">Normal</button>
+                                    <button type="button" class="v-filter-btn" data-filter="cinematic">Cinematic</button>
+                                    <button type="button" class="v-filter-btn" data-filter="cyberpunk">Cyberpunk</button>
+                                    <button type="button" class="v-filter-btn" data-filter="grayscale">Grayscale</button>
+                                    <button type="button" class="v-filter-btn" data-filter="matrix">Matrix</button>
+                                    <button type="button" class="v-filter-btn" data-filter="warm">Golden</button>
+                                </div>
+                            </div>
+
+                            <div class="inspector-section">
+                                <label class="sec-label">Selected Clip / PNG Overlay Adjuster</label>
+                                <div id="video-clip-inspector"></div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+
+                <!-- Lower Row: Multi-Track Timeline -->
+                <div class="panel video-bottom-row">
+                    <div class="timeline-action-bar">
+                        <div class="tl-left-tools">
+                            <button type="button" class="tl-btn active" id="tl-mode-select">
+                                <i class="fa-solid fa-arrow-pointer"></i> Move / Trim
+                            </button>
+                            <button type="button" class="tl-btn btn-split-highlight" id="tl-split-at-playhead">
+                                <i class="fa-solid fa-scissors"></i> Split at Red Line (S)
+                            </button>
+                            <button type="button" class="tl-btn" id="tl-duplicate-btn">
+                                <i class="fa-regular fa-copy"></i> Duplicate
+                            </button>
+                            <button type="button" class="tl-btn danger" id="tl-delete-btn">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </div>
+                        <div class="tl-right-tools">
+                            <span class="tl-hint">Drag PNG/Text on Video Screen • Drag Red Line & press <strong>S</strong> to Split</span>
+                            <label>Zoom</label>
+                            <input type="range" id="tl-zoom" min="16" max="90" value="32">
+                        </div>
+                    </div>
+
+                    <div class="timeline-body">
+                        <div class="track-labels-col">
+                            <div class="ruler-label-box">TIMECODE / ◆ KF</div>
+                            <div class="track-label"><i class="fa-solid fa-font" style="color:#f59e0b"></i> Overlays / Text</div>
+                            <div class="track-label"><i class="fa-solid fa-images" style="color:#ec4899"></i> PNG / B-Roll</div>
+                            <div class="track-label"><i class="fa-solid fa-video" style="color:#6366f1"></i> A-Roll (Main)</div>
+                            <div class="track-label"><i class="fa-solid fa-wave-square" style="color:#10b981"></i> Audio / BGM</div>
+                        </div>
+
+                        <div class="track-lanes-scroll" id="timeline-lanes-scroll">
+                            <div class="time-ruler" id="time-ruler"></div>
+
+                            <div class="track-lane" id="track-overlay" data-track="overlay"></div>
+                            <div class="track-lane" id="track-broll" data-track="broll"></div>
+                            <div class="track-lane" id="track-aroll" data-track="aroll"></div>
+                            <div class="track-lane" id="track-audio" data-track="audio"></div>
+
+                            <div class="playhead" id="playhead-line">
+                                <div class="playhead-head" id="playhead-handle"></div>
+                                <div class="playhead-hit-area"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== ENGINE 2: 3D GRAPHIC DESIGN & PHOTO STUDIO ==================== -->
+        <section id="ws-graphic" class="workspace">
+            <div class="graphic-engine-grid">
+                <aside class="panel graphic-toolbar">
+                    <button type="button" class="tool-tile" id="g-btn-3d-text">
+                        <i class="fa-solid fa-cubes" style="color:#38bdf8"></i>
+                        <span>3D Text</span>
+                    </button>
+                    <button type="button" class="tool-tile" id="g-btn-3d-cube">
+                        <i class="fa-solid fa-cube" style="color:#10b981"></i>
+                        <span>3D Cube</span>
+                    </button>
+                    <button type="button" class="tool-tile" id="g-btn-text">
+                        <i class="fa-solid fa-font"></i>
+                        <span>2D Text</span>
+                    </button>
+                    <button type="button" class="tool-tile" id="g-btn-rect">
+                        <i class="fa-regular fa-square"></i>
+                        <span>Rect</span>
+                    </button>
+                    <button type="button" class="tool-tile" id="g-btn-circle">
+                        <i class="fa-regular fa-circle"></i>
+                        <span>Circle</span>
+                    </button>
+                    <button type="button" class="tool-tile" id="g-btn-star">
+                        <i class="fa-regular fa-star" style="color:#f59e0b"></i>
+                        <span>Star</span>
+                    </button>
+                    <button type="button" class="tool-tile" id="g-btn-draw">
+                        <i class="fa-solid fa-paintbrush" style="color:#10b981"></i>
+                        <span id="draw-mode-label">Brush: Off</span>
+                    </button>
+
+                    <label for="input-graphic-image" class="tool-tile upload-tile">
+                        <i class="fa-regular fa-image"></i>
+                        <span>Upload PNG</span>
+                    </label>
+
+                    <div class="toolbar-sep"></div>
+
+                    <button type="button" class="tool-tile" id="g-btn-clone">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Clone</span>
+                    </button>
+                    <button type="button" class="tool-tile danger" id="g-btn-delete">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Delete</span>
+                    </button>
+                </aside>
+
+                <div class="panel graphic-center">
+                    <div class="graphic-header">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span><i class="fa-solid fa-cube" style="color:#10b981"></i> 3D Perspective Artboard</span>
+                            <button type="button" class="btn btn-xs btn-emerald" id="g-preset-iso">3D Isometric View</button>
+                            <button type="button" class="btn btn-xs btn-secondary" id="g-preset-tilt">3D Cyber Tilt</button>
+                            <button type="button" class="btn btn-xs btn-secondary" id="g-preset-flat">Reset 2D Flat</button>
+                            <button type="button" class="btn btn-xs btn-secondary" id="g-btn-gradient-bg">Gradient BG</button>
+                        </div>
+                        <div class="artboard-bg-control">
+                            <label for="input-graphic-image" class="btn btn-xs btn-primary">
+                                <i class="fa-solid fa-file-image"></i> + Insert Photo/PNG
+                            </label>
+                            <input type="color" id="g-canvas-bg" value="#0b0f19">
+                        </div>
+                    </div>
+
+                    <div class="canvas-stage-holder" id="canvas-stage-holder">
+                        <div id="artboard-3d-pivot" class="artboard-3d-pivot">
+                            <canvas id="fabric-stage" width="880" height="495"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="panel graphic-right">
+                    <div class="panel-header">
+                        <span><i class="fa-solid fa-cubes"></i> 3D Studio & Layer Controls</span>
+                    </div>
+                    <div class="graphic-props-body">
+                        <div class="box-3d-controls">
+                            <div class="sec-label" style="margin-bottom:4px;"><i class="fa-solid fa-cube"></i> 3D Perspective & Depth Engine</div>
+                            <div class="prop-grid-2">
+                                <div class="prop-row">
+                                    <label>3D Rotate X (<span id="val-3d-rx">0°</span>)</label>
+                                    <input type="range" id="g-3d-rx" min="-55" max="55" value="0">
+                                </div>
+                                <div class="prop-row">
+                                    <label>3D Rotate Y (<span id="val-3d-ry">0°</span>)</label>
+                                    <input type="range" id="g-3d-ry" min="-55" max="55" value="0">
+                                </div>
+                            </div>
+                            <div class="prop-grid-2">
+                                <div class="prop-row">
+                                    <label>3D Rotate Z (<span id="val-3d-rz">0°</span>)</label>
+                                    <input type="range" id="g-3d-rz" min="-45" max="45" value="0">
+                                </div>
+                                <div class="prop-row">
+                                    <label>3D Object Extrude (<span id="val-3d-depth">12px</span>)</label>
+                                    <input type="range" id="g-3d-depth" min="0" max="30" value="12">
+                                </div>
+                            </div>
+                            <div class="prop-grid-2">
+                                <div class="prop-row">
+                                    <label>Object Skew X (3D Slant)</label>
+                                    <input type="range" id="g-obj-skewx" min="-40" max="40" value="0">
+                                </div>
+                                <div class="prop-row">
+                                    <label>Object Skew Y</label>
+                                    <input type="range" id="g-obj-skewy" min="-40" max="40" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="prop-grid-2">
+                            <div class="prop-row">
+                                <label>Face Fill Color</label>
+                                <input type="color" id="g-prop-color" value="#38bdf8">
+                            </div>
+                            <div class="prop-row">
+                                <label>3D Side / Depth Color</label>
+                                <input type="color" id="g-prop-shadow-color" value="#6366f1">
+                            </div>
+                        </div>
+
+                        <div class="prop-grid-2">
+                            <div class="prop-row">
+                                <label>Font Family</label>
+                                <select id="g-prop-font">
+                                    <option value="Orbitron">Orbitron 3D</option>
+                                    <option value="Bebas Neue">Bebas Neue</option>
+                                    <option value="Inter">Inter Bold</option>
+                                    <option value="JetBrains Mono">JetBrains Mono</option>
+                                </select>
+                            </div>
+                            <div class="prop-row">
+                                <label>Opacity (<span id="g-opacity-readout">100%</span>)</label>
+                                <input type="range" id="g-prop-opacity" min="0.1" max="1" step="0.05" value="1">
+                            </div>
+                        </div>
+
+                        <div class="prop-row">
+                            <label>Photo Filters</label>
+                            <div class="fx-checkboxes">
+                                <label class="fx-pill"><input type="checkbox" id="g-fx-sepia"> Sepia</label>
+                                <label class="fx-pill"><input type="checkbox" id="g-fx-invert"> Invert</label>
+                                <label class="fx-pill"><input type="checkbox" id="g-fx-grayscale"> B&W</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-header" style="border-top: 1px solid var(--border);">
+                        <span><i class="fa-solid fa-layer-group"></i> Layer Stack (<span id="layer-stack-count">0</span>)</span>
+                        <div class="layer-order-btns">
+                            <button type="button" class="icon-btn" id="layer-up-btn"><i class="fa-solid fa-chevron-up"></i></button>
+                            <button type="button" class="icon-btn" id="layer-down-btn"><i class="fa-solid fa-chevron-down"></i></button>
+                        </div>
+                    </div>
+                    <div id="fabric-layer-stack" class="layer-stack-list"></div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- ==================== WORKSPACE 3: ACCOUNT & PROJECTS HUB ==================== -->
+        <section id="ws-account" class="workspace">
+            <div class="account-workspace-wrap">
+                <div class="auth-card panel" id="auth-portal-card">
+                    <div class="auth-tabs">
+                        <button type="button" class="auth-tab active" id="tab-btn-signup">Create Account</button>
+                        <button type="button" class="auth-tab" id="tab-btn-signin">Sign In with Gmail</button>
+                    </div>
+
+                    <form id="form-create-account" class="auth-form">
+                        <div class="auth-header">
+                            <div class="auth-logo"><i class="fa-solid fa-user-plus"></i></div>
+                            <h3>Create Account in OmniEdit Studio</h3>
+                            <p>Register with your Full Name and Gmail ID</p>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Full Name</label>
+                            <input type="text" id="reg-name" placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Gmail Address</label>
+                            <input type="email" id="reg-email" placeholder="yourname@gmail.com" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Studio Role / Profession</label>
+                            <select id="reg-role">
+                                <option value="Video Editor & Motion Designer">Video Editor & Motion Designer</option>
+                                <option value="3D Graphic & Brand Designer">3D Graphic & Brand Designer</option>
+                                <option value="YouTube / Content Creator">YouTube / Content Creator</option>
+                                <option value="Full-Stack Creative Director">Full-Stack Creative Director</option>
+                            </select>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Create Password (Min 6 characters)</label>
+                            <input type="password" id="reg-pass" placeholder="Minimum 6 characters" minlength="6" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:6px;">
+                            <i class="fa-solid fa-user-plus"></i> Create Account in OmniEdit Studio
+                        </button>
+                    </form>
+
+                    <form id="form-signin-account" class="auth-form" hidden>
+                        <div class="auth-header">
+                            <div class="auth-logo"><i class="fa-brands fa-google"></i></div>
+                            <h3>Sign In to OmniEdit Studio</h3>
+                            <p>Enter your registered Gmail ID and password</p>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Gmail Address</label>
+                            <input type="email" id="login-email" placeholder="yourname@gmail.com" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Password</label>
+                            <input type="password" id="login-pass" placeholder="Enter your password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-emerald btn-lg" style="width:100%;margin-top:6px;">
+                            <i class="fa-solid fa-right-to-bracket"></i> Sign In to OmniEdit Studio
+                        </button>
+                    </form>
+                </div>
+
+                <div class="account-dashboard-col">
+                    <div class="account-profile-card">
+                        <div class="avatar-ring" id="profile-avatar-letter">O</div>
+                        <div class="profile-details">
+                            <span class="brand-badge" id="profile-status-badge">OMNIEDIT STUDIO MEMBER</span>
+                            <h2 id="account-user-name">OmniEdit Creator</h2>
+                            <p id="account-user-email">Signed In</p>
+                        </div>
+                        <div class="profile-stats-row">
+                            <div class="p-stat"><strong id="acc-total-projects">0</strong><span>Projects</span></div>
+                            <div class="p-stat"><strong id="acc-total-exports">0</strong><span>Exports</span></div>
+                            <div class="p-stat"><strong id="acc-storage-used">0 MB</strong><span>Storage</span></div>
+                        </div>
+                        <label for="input-custom-logo" class="btn btn-xs btn-secondary" title="Upload Custom Studio Logo">
+                            <i class="fa-solid fa-image"></i> Change Logo
+                        </label>
+                        <button type="button" class="btn btn-xs btn-danger-outline" id="btn-logout-account" hidden>
+                            <i class="fa-solid fa-power-off"></i> Sign Out
+                        </button>
+                    </div>
+
+                    <div class="panel" style="flex:1;">
+                        <div class="panel-header">
+                            <span><i class="fa-solid fa-folder-open"></i> Your Saved Projects</span>
+                            <div style="display:flex;gap:8px;">
+                                <button type="button" class="btn btn-xs btn-primary" id="acc-save-new-btn">
+                                    <i class="fa-solid fa-plus"></i> Save Current Project
+                                </button>
+                                <button type="button" class="btn btn-xs btn-danger-outline" id="acc-delete-all-proj-btn">
+                                    <i class="fa-solid fa-trash-can"></i> Delete All Projects
+                                </button>
+                            </div>
+                        </div>
+                        <div id="saved-projects-list" class="saved-projects-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- PRO EXPORT SUITE MODAL (With Bitrate Control) -->
+    <div id="export-modal" class="modal-overlay" hidden>
+        <div class="modal-window">
+            <div class="modal-top">
+                <h3><i class="fa-solid fa-bolt"></i> OmniEdit Studio Master Export Suite</h3>
+                <button type="button" class="icon-btn" id="close-export-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-content">
+                <div class="field-group">
+                    <label>Master Output Filename</label>
+                    <input type="text" id="export-filename" value="OmniEdit_Studio_Master">
+                </div>
+
+                <div class="field-group">
+                    <label>Select Export Engine & Format</label>
+                    <select id="export-format-select">
+                        <option value="mp4">Engine 1: Master Video (.MP4 — H.264)</option>
+                        <option value="webm">Engine 1: WebM Video (.WebM — VP9)</option>
+                        <option value="frame_png">Engine 1: Composite Video Frame + PNG Overlays (.PNG)</option>
+                        <option value="png">Engine 2: 3D Graphic Artboard Lossless (.PNG)</option>
+                        <option value="webp">Engine 2: 3D Graphic Artboard (.WebP)</option>
+                    </select>
+                </div>
+
+                <div class="prop-grid-2">
+                    <div class="field-group">
+                        <label>Resolution</label>
+                        <select id="export-resolution-select">
+                            <option value="1080p">Full HD 1080p</option>
+                            <option value="4k">Ultra HD 4K</option>
+                            <option value="720p">Fast Social 720p</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label>Bitrate & Compression</label>
+                        <select id="export-bitrate-select">
+                            <option value="16M">Ultra Master (16 Mbps)</option>
+                            <option value="8M" selected>Balanced Pro (8 Mbps)</option>
+                            <option value="3M">Bitrate Reduction / Lite (3 Mbps)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="export-progress-banner" class="export-progress" hidden>
+                    <div class="loader-ring"></div>
+                    <span>Compiling 3D, Chroma Key & Multi-Track layers...</span>
+                </div>
+
+                <div id="export-result-banner" class="export-success" hidden>
+                    <div class="export-success-info">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <div>
+                            <strong id="export-output-name">output.mp4</strong>
+                            <span id="export-output-size">Ready</span>
+                        </div>
+                    </div>
+                    <a id="export-download-anchor" href="#" class="btn btn-emerald btn-sm" download>
+                        <i class="fa-solid fa-download"></i> Download File
+                    </a>
+                </div>
+            </div>
+            <div class="modal-bottom">
+                <button type="button" class="btn btn-secondary" id="modal-cancel-btn">Close</button>
+                <button type="button" class="btn btn-primary" id="run-export-btn">
+                    <i class="fa-solid fa-gears"></i> Render Master File
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
